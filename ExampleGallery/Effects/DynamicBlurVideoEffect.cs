@@ -20,22 +20,6 @@ namespace ExampleGallery.Effects
     {
         private CanvasDevice canvasDevice;
         private IPropertySet configuration;
-
-        /// <summary>
-        /// Value used for BlurAmount property
-        /// </summary>
-        public double BlurAmount
-        {
-            get
-            {
-                object val;
-                if (configuration != null && configuration.TryGetValue("BlurAmount", out val))
-                {
-                    return (double)val;
-                }
-                return 3;
-            }
-        }
         public bool IsReadOnly { get { return false; } }
 
         public IReadOnlyList<VideoEncodingProperties> SupportedEncodingProperties { get { return new List<VideoEncodingProperties>(); } }
@@ -63,6 +47,30 @@ namespace ExampleGallery.Effects
             canvasDevice = CanvasDevice.CreateFromDirect3D11Device(device);
         }
 
+        public Matrix5x4 ColorMatrix
+        {
+            get
+            {
+
+                object val;
+
+                if (configuration != null && configuration.TryGetValue("ColorMatrix", out val))
+                {
+                   return (Matrix5x4)val;
+
+                }
+                return new Matrix5x4
+                {
+                    // Original
+                    M11 = 1, M12 = 0, M13 = 0, M14 = 0,
+                    M21 = 0, M22 = 1, M23 = 0, M24 = 0,
+                    M31 = 0, M32 = 0, M33 = 1, M34 = 0,
+                    M41 = 0, M42 = 0, M43 = 0, M44 = 1,
+                    M51 = 0, M52 = 0, M53 = 0, M54 = 0
+                };
+            }
+        }
+
         public void ProcessFrame(ProcessVideoFrameContext context)
         {
             using (CanvasBitmap inputBitmap = CanvasBitmap.CreateFromDirect3D11Surface(canvasDevice, context.InputFrame.Direct3DSurface))
@@ -70,15 +78,17 @@ namespace ExampleGallery.Effects
             using (CanvasDrawingSession ds = renderTarget.CreateDrawingSession())
             {
 
-                var gaussianBlurEffect = new GaussianBlurEffect
+                ColorMatrixEffect colorMatrixEffect = new ColorMatrixEffect
                 {
-                    Source = inputBitmap,
-                    BlurAmount = (float)BlurAmount,
-                    Optimization = EffectOptimization.Speed
+                    Source = inputBitmap
                 };
 
-                ds.DrawImage(gaussianBlurEffect);
+                colorMatrixEffect.ColorMatrix = ColorMatrix;
+
+                ds.DrawImage(colorMatrixEffect);
+
             }
         }
     }
+
 }

@@ -3,8 +3,10 @@
 // Licensed under the MIT License. See LICENSE.txt in the project root for license information.
 
 using ExampleGallery.Effects;
+using Microsoft.Graphics.Canvas.Effects;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Windows.Foundation.Collections;
 using Windows.Graphics.Display;
@@ -176,7 +178,15 @@ namespace ExampleGallery
         private void BlurAmountSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
             if (effectPropertySet == null) return;
-            effectPropertySet["BlurAmount"] = e.NewValue;
+
+                                effectPropertySet["ColorMatrix"] = new Matrix5x4(){
+                                    M11 = (float)e.NewValue, M12 = 0, M13 = 0, M14 = 0,
+                                    M21 = 0, M22 = (float)e.NewValue, M23 = 0, M24 = 0,
+                                    M31 = 0, M32 = 0, M33 = (float)e.NewValue, M34 = 0,
+                                    M41 = 0, M42 = 0, M43 = 0, M44 = 1,
+                                    M51 = 0, M52 = 0, M53 = 0, M54 = 0
+                    }
+                        ;
         }
 
         private async Task SetEffect(string effect)
@@ -211,7 +221,15 @@ namespace ExampleGallery
                     break;
                 case gaussianBlurEffect:
                     typeName = typeof(DynamicBlurVideoEffect).FullName;
-                    effectPropertySet["BlurAmount"] = blurAmountSlider.Value;
+                    Debug.WriteLine("SliderValue: " + (float)blurAmountSlider.Value);
+                    effectPropertySet["ColorMatrix"] = new Matrix5x4(){
+                                    M11 = (float)blurAmountSlider.Value, M12 = 0, M13 = 0, M14 = 0,
+                                    M21 = 0, M22 = (float)blurAmountSlider.Value, M23 = 0, M24 = 0,
+                                    M31 = 0, M32 = 0, M33 = (float)blurAmountSlider.Value, M34 = 0,
+                                    M41 = 0, M42 = 0, M43 = 0, M44 = 1,
+                                    M51 = 0, M52 = 0, M53 = 0, M54 = 0
+                    }
+                        ;
                     blurAmountSlider.Visibility = Visibility.Visible;
                     break;
             }
